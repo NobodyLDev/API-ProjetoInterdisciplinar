@@ -55,4 +55,20 @@ export const productController = {
     }
   },
 
+    async delete(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const result = await productService.delete(id);
+
+      return res.json(result);
+    } catch (error: any) {
+      return res.status(404).json({ error: error.message });
+    }
+  },
+
 };
