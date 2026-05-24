@@ -23,4 +23,36 @@ export const productController = {
     }
   },
 
+    async getById(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const product = await productService.getById(id);
+
+      return res.json(product);
+    } catch (error: any) {
+      return res.status(404).json({ error: error.message });
+    }
+  },
+
+  async update(req: Request, res: Response) {
+    try {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ error: "ID inválido" });
+      }
+
+      const product = await productService.update(id, req.body);
+
+      return res.json(product);
+    } catch (error: any) {
+      return res.status(400).json({ error: error.message });
+    }
+  },
+
 };
