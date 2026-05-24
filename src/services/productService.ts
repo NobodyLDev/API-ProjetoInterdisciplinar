@@ -40,4 +40,43 @@ export const productService = {
         return product;
     },
 
+    async update(id: number, data: any) {
+        const existing = await productRepository.findById(id);
+
+        if (!existing) {
+            throw new Error("Produto não encontrado");
+        }
+
+        const { nome, materiais } = data;
+
+        if (materiais !== undefined) {
+            if (!Array.isArray(materiais) || materiais.length === 0) {
+                throw new Error("materiais deve ser um array não vazio");
+            }
+
+            await productRepository.validateMaterials(materiais);
+        }
+
+        const updateData: any = {};
+
+        if (nome !== undefined) updateData.nome = nome;
+        if (materiais !== undefined) updateData.materiais = materiais;
+
+        await productRepository.update(id, updateData);
+
+        return { ...existing, ...updateData };
+    },
+
+    async delete(id: number) {
+        const existing = await productRepository.findById(id);
+
+        if (!existing) {
+            throw new Error("Produto não encontrado");
+        }
+
+        await productRepository.delete(id);
+
+        return { message: "Produto removido com sucesso" };
+    },
+
 };
