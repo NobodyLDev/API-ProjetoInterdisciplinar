@@ -1,37 +1,20 @@
-import { PrismaClient } from '@prisma/client';
-import { IHistory } from '../models/history';
-
-// A Pessoa 5 (Infra) vai disponibilizar essa instância do Prisma aqui:
-import { prisma } from '../config/database'; 
+import { History } from "../models/history";
 
 export class HistoryRepository {
-  private prisma: PrismaClient;
+  async create(data: History) {
+    /*
+      Implementação do banco ficará
+      responsável pela equipe de infraestrutura.
+    */
 
-  constructor() {
-    this.prisma = prisma;
-  }
-
-  async create(data: IHistory) {
-    return await this.prisma.history.create({
-      data: {
-        action: data.action,
-        entity: data.entity,
-        entityId: data.entityId,
-        metadata: data.metadata,
-      },
-    });
+    return data;
   }
 
   async findAll() {
-    return await this.prisma.history.findMany({
-      orderBy: { createdAt: 'desc' },
-    });
-  }
+    /*
+      Implementação futura do banco.
+    */
 
-  async findByEntity(entity: string) {
-    return await this.prisma.history.findMany({
-      where: { entity },
-      orderBy: { createdAt: 'desc' },
-    });
+    return [];
   }
 }
