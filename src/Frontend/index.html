@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Produção</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>Praodução</h1>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-link active" data-section="dashboard">📊 Dashboard</button>
+        <button class="sidebar-link" data-section="materials">📦 Materiais</button>
+        <button class="sidebar-link" data-section="products">🏭 Produtos</button>
+        <button class="sidebar-link" data-section="simulation">⚙️ Simulação</button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div id="notification" class="notification"></div>
+
+      <!-- Dashboard Section -->
+      <section id="dashboard" class="section active">
+        <h2>Dashboard</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Materiais</h3>
+            <p class="stat-value" id="stat-materials">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Produtos</h3>
+            <p class="stat-value" id="stat-products">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Estoque Baixo</h3>
+            <p class="stat-value" id="stat-low-stock">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Total em Estoque</h3>
+            <p class="stat-value" id="stat-total-units">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Simulações</h3>
+            <p class="stat-value" id="stat-simulations">0</p>
+          </div>
+          <div class="stat-card">
+            <h3>Última Simulação</h3>
+            <p class="stat-value" id="stat-last-run">-</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Materials Section -->
+      <section id="materials" class="section">
+        <h2>Cadastro de Materiais</h2>
+        <div class="form-section">
+          <form id="material-form">
+            <input type="text" id="material-name" placeholder="Nome do material" required>
+            <input type="number" id="material-quantity" placeholder="Quantidade" min="1" required>
+            <button type="submit">Cadastrar Material</button>
+          </form>
+        </div>
+
+        <h3>Lista de Materiais</h3>
+        <div id="materials-list" class="items-list"></div>
+      </section>
+
+      <!-- Products Section -->
+      <section id="products" class="section">
+        <h2>Cadastro de Produtos</h2>
+        <div class="form-section">
+          <form id="product-form">
+            <input type="text" id="product-name" placeholder="Nome do produto" required>
+            <input type="number" id="product-quantity" placeholder="Quantidade por produção" min="1" required>
+            
+            <h4>Materiais necessários</h4>
+            <div id="product-material-rows"></div>
+            <button type="button" id="add-material-row">+ Adicionar Material</button>
+
+            <button type="submit">Cadastrar Produto</button>
+          </form>
+        </div>
+
+        <h3>Lista de Produtos</h3>
+        <div id="products-list" class="items-list"></div>
+      </section>
+
+      <!-- Simulation Section -->
+      <section id="simulation" class="section">
+        <h2>Simulação de Produção</h2>
+        <div class="form-section">
+          <form id="simulation-form">
+            <select id="simulation-product" required>
+              <option value="">Selecione um produto</option>
+            </select>
+            <input type="number" id="simulation-quantity" placeholder="Quantidade a produzir" min="1" required>
+            <button type="submit">Simular Produção</button>
+          </form>
+        </div>
+
+        <div id="simulation-result"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
