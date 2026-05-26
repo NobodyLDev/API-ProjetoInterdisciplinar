@@ -1,4 +1,4 @@
-import { materialsCollection } from "../database";
+import { materialsCollection } from "../database/database";
 
 export const materialRepository = {
 

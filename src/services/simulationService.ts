@@ -1,4 +1,4 @@
-import { productsCollection, materialsCollection } from "../database"; //vai ser colocado o arquivo correto após a criação do banco de dados
+import { productsCollection, materialsCollection } from "../database/database"; //vai ser colocado o arquivo correto após a criação do banco de dados
 
 export const simulationService = {
   async simulate(data: any) {

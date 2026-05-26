@@ -1,4 +1,4 @@
-import { productsCollection, materialsCollection } from "../database";
+import { productsCollection, materialsCollection } from "../database/database";
 
 export const productRepository = {
 
