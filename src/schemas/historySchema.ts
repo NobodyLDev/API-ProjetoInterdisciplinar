@@ -6,6 +6,7 @@ export interface History {
   [key: string]: any;
 }
 
+import { ValidationError } from "../errors";
 export function validateHistory(data: History) {
   if (!data.action) {
     throw new Error("Action é obrigatória");

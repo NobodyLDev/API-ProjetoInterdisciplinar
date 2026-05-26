@@ -1,5 +1,5 @@
 import { HistoryRepository } from "../repositories/historyRepository";
-import { validateHistory } from "../schemas/HistorySchema";
+import { validateHistory } from "../schemas/historySchema";
 
 const historyRepository = new HistoryRepository();
 
