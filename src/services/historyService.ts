@@ -1,4 +1,5 @@
 import { HistoryRepository } from "../repositories/historyRepository";
+import { validateHistory } from "../schemas/historySchema";
 
 const historyRepository = new HistoryRepository();
 
@@ -8,11 +9,15 @@ export class HistoryService {
     entity: string,
     description: string
   ) {
-    return await historyRepository.create({
+    const historyData = {
       action,
       entity,
       description,
-    });
+    };
+
+    validateHistory(historyData);
+
+    return await historyRepository.create(historyData);
   }
 
   async findAll() {
