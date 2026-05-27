@@ -1,17 +1,19 @@
 import express from "express";
-import cors from "cors";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
+import path from "path";
 import materialsRoutes from "./routes/materialRoutes";
 import productsRoutes from "./routes/productRoutes";
 import simulationRoutes from "./routes/simulationRoutes";
-import historyRoutes from "./routes/historyRoutes";
 import { connectDatabase } from "./database/database";
+
+import {
+  loggerMiddleware,
+  notFoundMiddleware,
+  errorMiddleware,
+} from "./middlewares";
 
 const app = express();
 
-// Middleware de CORS personalizado (mantendo seu estilo original)
-app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
@@ -21,98 +23,32 @@ app.use((req: express.Request, res: express.Response, next: express.NextFunction
   next();
 });
 
-// Middlewares adicionais para segurança e performance
-app.use(helmet()); // Segurança para headers HTTP
-app.use(express.json()); // Parse de JSON
-app.use(express.urlencoded({ extended: true })); // Parse de URL encoded
+app.use(express.json());
 
-// Rate limiting para evitar abuse
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // limite de 100 requisições por IP
-  message: "Muitas requisições deste IP, tente novamente mais tarde"
-});
-app.use("/api", limiter);
+app.use(loggerMiddleware);
+// Servir front-end estático (pasta src/Frontend durante desenvolvimento)
+const frontendPath = path.resolve(process.cwd(), "src", "Frontend");
+app.use(express.static(frontendPath));
 
-// Rotas da API (prefixo opcional)
 app.use("/materials", materialsRoutes);
 app.use("/products", productsRoutes);
 app.use("/simulate", simulationRoutes);
-app.use("/history", historyRoutes);
 
-// Rota de health check
-app.get("/health", (req: express.Request, res: express.Response) => {
-  res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    mongodb: "connected"
-  });
+app.use(notFoundMiddleware);
+
+app.use(errorMiddleware);
+
+export default app;
+// Rota catch-all para SPA: devolve index.html para rotas não-API
+app.get("/*", (req, res) => {
+  const indexFile = path.join(frontendPath, "index.html");
+  res.sendFile(indexFile);
 });
 
-// Rota raiz com informações da API
-app.get("/", (req: express.Request, res: express.Response) => {
-  res.status(200).json({
-    name: "Sistema de Produção API",
-    version: "1.0.0",
-    endpoints: {
-      materials: "/materials",
-      products: "/products",
-      simulate: "/simulate",
-      health: "/health"
-    }
-  });
-});
+export async function start() {
+  await connectDatabase();
 
-// Middleware para rotas não encontradas (404)
-app.use((req: express.Request, res: express.Response) => {
-  res.status(404).json({
-    success: false,
-    message: `Rota ${req.method} ${req.url} não encontrada`,
-    timestamp: new Date().toISOString()
+  app.listen(3000, () => {
+    console.log("API rodando em http://localhost:3000");
   });
-});
-
-// Middleware global de erro
-app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("Erro não tratado:", err);
-  res.status(500).json({
-    success: false,
-    message: "Erro interno do servidor",
-    error: process.env.NODE_ENV === "development" ? err.message : undefined,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Função para iniciar o servidor
-async function start() {
-  try {
-    // Conecta ao MongoDB
-    await connectDatabase();
-    
-    // Inicia o servidor
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`API rodando em http://localhost:${PORT}`);
-      console.log(`Ambiente: ${process.env.NODE_ENV || "development"}`);
-      console.log(`Health check: http://localhost:${PORT}/health`);
-    });
-  } catch (error) {
-    console.error("Erro ao iniciar o servidor:", error);
-    process.exit(1);
-  }
 }
-
-// Graceful shutdown
-process.on("SIGINT", () => {
-  console.log("\nRecebido SIGINT. Encerrando servidor...");
-  process.exit(0);
-});
-
-process.on("SIGTERM", () => {
-  console.log("\n Recebido SIGTERM. Encerrando servidor...");
-  process.exit(0);
-});
-
-// Inicia o servidor
-start();
