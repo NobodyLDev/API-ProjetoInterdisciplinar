@@ -34,16 +34,27 @@ app.use("/materials", materialsRoutes);
 app.use("/products", productsRoutes);
 app.use("/simulate", simulationRoutes);
 
+// Rota catch-all para SPA: devolve index.html apenas para GETs não-API
+app.use((req, res, next) => {
+  if (req.method !== "GET") return next();
+
+  if (
+    req.path.startsWith("/materials") ||
+    req.path.startsWith("/products") ||
+    req.path.startsWith("/simulate")
+  ) {
+    return next();
+  }
+
+  const indexFile = path.join(frontendPath, "index.html");
+  res.sendFile(indexFile);
+});
+
 app.use(notFoundMiddleware);
 
 app.use(errorMiddleware);
 
 export default app;
-// Rota catch-all para SPA: devolve index.html para rotas não-API
-app.get("/*", (req, res) => {
-  const indexFile = path.join(frontendPath, "index.html");
-  res.sendFile(indexFile);
-});
 
 export async function start() {
   await connectDatabase();
