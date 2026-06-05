@@ -4,6 +4,7 @@ import materialsRoutes from "./routes/materialRoutes";
 import productsRoutes from "./routes/productRoutes";
 import simulationRoutes from "./routes/simulationRoutes";
 import { connectDatabase } from "./database/database";
+import { config } from "./config/config";
 
 import {
   loggerMiddleware,
@@ -59,7 +60,7 @@ export default app;
 export async function start() {
   await connectDatabase();
 
-  app.listen(3000, () => {
-    console.log("API rodando em http://localhost:3000");
-  });
+  app.listen(config.port, () => {
+  console.log(`API rodando em http://localhost:${config.port}`);
+});
 }

@@ -2,12 +2,13 @@
 import dotenv from "dotenv";
 import { MongoClient, Collection } from "mongodb";
 import path from "path";
+import { config } from "../config/config";
 
 // Carrega o .env a partir do diretório de trabalho do processo (raiz do projeto)
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
-const mongoUri = process.env.MONGO_URI;
-const dbName = process.env.MONGO_DB_NAME || "API-ProjetoInterdisciplinar";
+const mongoUri = config.mongoUri;
+const dbName = config.dbName;
 
 if (!mongoUri) {
   console.error("MONGO_URI não definida no .env");
