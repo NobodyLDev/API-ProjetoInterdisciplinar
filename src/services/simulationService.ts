@@ -4,17 +4,18 @@ import { productsCollection, materialsCollection } from "../database/database";
 export const simulationService = {
   async simulate(data: any) {
     const { productId, quantidade } = data;
-
-    const productIdNumber = Number(productId);
     const quantidadeNumber = Number(quantidade);
 
-    if (!productIdNumber || !quantidadeNumber || quantidadeNumber <= 0) {
+    if (!productId || !quantidadeNumber || quantidadeNumber <= 0) {
       throw new Error("productId e quantidade válidos são obrigatórios");
     }
 
-    // Busca produto pelo campo id numérico (gerado pelo productService)
+    if (!ObjectId.isValid(String(productId))) {
+      throw new Error("productId inválido");
+    }
+
     const product = await productsCollection.findOne({
-      id: productIdNumber,
+      _id: new ObjectId(String(productId)),
     });
 
     if (!product) {
@@ -23,23 +24,13 @@ export const simulationService = {
 
     let possivel = true;
 
-    // BUG 1 CORRIGIDO: materiais são buscados por _id (ObjectId) e não por id numérico,
-    // pois o materialId salvo no produto é o _id string do MongoDB.
     const materiaisNecessarios = await Promise.all(
       (product.materiais || []).map(async (m: any) => {
         let material = null;
 
-        // Tenta buscar por _id (ObjectId) — caso o materialId seja um ObjectId string
         if (m.materialId && ObjectId.isValid(String(m.materialId))) {
           material = await materialsCollection.findOne({
             _id: new ObjectId(String(m.materialId)),
-          });
-        }
-
-        // Fallback: tenta buscar por campo id numérico (compatibilidade)
-        if (!material && !isNaN(Number(m.materialId))) {
-          material = await materialsCollection.findOne({
-            id: Number(m.materialId),
           });
         }
 
@@ -65,12 +56,6 @@ export const simulationService = {
         if (m.materialId && ObjectId.isValid(String(m.materialId))) {
           material = await materialsCollection.findOne({
             _id: new ObjectId(String(m.materialId)),
-          });
-        }
-
-        if (!material && !isNaN(Number(m.materialId))) {
-          material = await materialsCollection.findOne({
-            id: Number(m.materialId),
           });
         }
 
