@@ -7,7 +7,7 @@ export const updateProductSchema = {
     required: false,
     type: "array",
     items: {
-      materialId: { required: true, type: "number" },
+      materialId: { required: true, type: "string" },
       quantidade: { required: true, type: "number", min: 1 },
     },
   },

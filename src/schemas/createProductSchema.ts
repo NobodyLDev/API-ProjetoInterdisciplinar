@@ -7,7 +7,7 @@ export const createProductSchema = {
     required: true,
     type: "array",
     items: {
-      materialId: { required: true, type: "number" },
+      materialId: { required: true, type: "string" },
       quantidade: { required: true, type: "number", min: 1 },
     },
   },

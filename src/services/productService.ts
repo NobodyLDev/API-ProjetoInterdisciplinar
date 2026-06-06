@@ -12,7 +12,6 @@ export const productService = {
     await productRepository.validateMaterials(materiais);
 
     const product = { nome, materiais };
-
     const result = await productRepository.create(product);
 
     return {
