@@ -3,6 +3,7 @@ import path from "path";
 import materialsRoutes from "./routes/materialRoutes";
 import productsRoutes from "./routes/productRoutes";
 import simulationRoutes from "./routes/simulationRoutes";
+import historyRoutes from "./routes/historyRoutes";
 import { connectDatabase } from "./database/database";
 import { config } from "./config/config";
 
@@ -25,24 +26,24 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-
 app.use(loggerMiddleware);
-// Servir front-end estático (pasta src/Frontend durante desenvolvimento)
+
 const frontendPath = path.resolve(process.cwd(), "src", "Frontend");
 app.use(express.static(frontendPath));
 
 app.use("/materials", materialsRoutes);
 app.use("/products", productsRoutes);
 app.use("/simulate", simulationRoutes);
+app.use("/history", historyRoutes);
 
-// Rota catch-all para SPA: devolve index.html apenas para GETs não-API
 app.use((req, res, next) => {
   if (req.method !== "GET") return next();
 
   if (
     req.path.startsWith("/materials") ||
     req.path.startsWith("/products") ||
-    req.path.startsWith("/simulate")
+    req.path.startsWith("/simulate") ||
+    req.path.startsWith("/history")
   ) {
     return next();
   }
@@ -52,7 +53,6 @@ app.use((req, res, next) => {
 });
 
 app.use(notFoundMiddleware);
-
 app.use(errorMiddleware);
 
 export default app;
@@ -61,6 +61,6 @@ export async function start() {
   await connectDatabase();
 
   app.listen(config.port, () => {
-  console.log(`API rodando em http://localhost:${config.port}`);
-});
+    console.log(`API rodando em http://localhost:${config.port}`);
+  });
 }
