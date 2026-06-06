@@ -2,7 +2,6 @@ import { ObjectId } from "mongodb";
 import { productsCollection, materialsCollection } from "../database/database";
 
 export const productRepository = {
-
   async findAll() {
     return await productsCollection.find().toArray();
   },
@@ -41,23 +40,24 @@ export const productRepository = {
   },
 
   async update(id: number, data: any) {
-    return await productsCollection.updateOne(
-      { id },
-      { $set: data }
-    );
+    return await productsCollection.updateOne({ id }, { $set: data });
   },
 
   async delete(id: number) {
     return await productsCollection.deleteOne({ id });
   },
 
+  // BUG 3 CORRIGIDO: o tipo anterior forçava materialId como string ObjectId,
+  // mas o frontend envia número. Agora aceita number | string e faz a busca
+  // correta dependendo do tipo recebido.
   async validateMaterials(
-    materiais: { materialId: string; quantidade: number }[]
+    materiais: { materialId: number | string; quantidade: number }[]
   ) {
     for (const m of materiais) {
-
       if (
-        !m.materialId ||
+        m.materialId === undefined ||
+        m.materialId === null ||
+        m.materialId === "" ||
         typeof m.quantidade !== "number" ||
         m.quantidade <= 0
       ) {
@@ -66,15 +66,25 @@ export const productRepository = {
         );
       }
 
-      if (!ObjectId.isValid(m.materialId)) {
-        throw new Error(
-          `ID de material inválido: ${m.materialId}`
-        );
+      let found = null;
+
+      // Se vier como string válida de ObjectId, busca por _id
+      if (
+        typeof m.materialId === "string" &&
+        ObjectId.isValid(m.materialId)
+      ) {
+        found = await materialsCollection.findOne({
+          _id: new ObjectId(m.materialId),
+        });
       }
 
-      const found = await materialsCollection.findOne({
-        _id: new ObjectId(m.materialId)
-      });
+      // Se não achou, ou vier como número, busca por id numérico
+      if (!found) {
+        const numericId = Number(m.materialId);
+        if (!isNaN(numericId)) {
+          found = await materialsCollection.findOne({ id: numericId });
+        }
+      }
 
       if (!found) {
         throw new Error(
@@ -82,6 +92,5 @@ export const productRepository = {
         );
       }
     }
-  }
-
+  },
 };
