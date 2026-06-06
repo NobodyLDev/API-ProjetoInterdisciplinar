@@ -1,4 +1,3 @@
-// Define a local History type to avoid depending on a missing export
 export interface History {
   action: string;
   entity: string;
@@ -6,19 +5,9 @@ export interface History {
   [key: string]: any;
 }
 
-import { ValidationError } from "../errors";
 export function validateHistory(data: History) {
-  if (!data.action) {
-    throw new Error("Action é obrigatória");
-  }
-
-  if (!data.entity) {
-    throw new Error("Entity é obrigatória");
-  }
-
-  if (!data.description) {
-    throw new Error("Description é obrigatória");
-  }
-
+  if (!data.action) throw new Error("Action é obrigatória");
+  if (!data.entity) throw new Error("Entity é obrigatória");
+  if (!data.description) throw new Error("Description é obrigatória");
   return true;
 }
