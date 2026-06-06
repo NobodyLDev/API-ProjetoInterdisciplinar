@@ -1,4 +1,5 @@
-import { productsCollection, materialsCollection } from "../database/database"; //vai ser colocado o arquivo correto após a criação do banco de dados
+import { ObjectId } from "mongodb";
+import { productsCollection, materialsCollection } from "../database/database";
 
 export const simulationService = {
   async simulate(data: any) {
@@ -11,8 +12,9 @@ export const simulationService = {
       throw new Error("productId e quantidade válidos são obrigatórios");
     }
 
+    // Busca produto pelo campo id numérico (gerado pelo productService)
     const product = await productsCollection.findOne({
-      id: productIdNumber
+      id: productIdNumber,
     });
 
     if (!product) {
@@ -21,14 +23,27 @@ export const simulationService = {
 
     let possivel = true;
 
+    // BUG 1 CORRIGIDO: materiais são buscados por _id (ObjectId) e não por id numérico,
+    // pois o materialId salvo no produto é o _id string do MongoDB.
     const materiaisNecessarios = await Promise.all(
       (product.materiais || []).map(async (m: any) => {
-        const material = await materialsCollection.findOne({
-          id: m.materialId
-        });
+        let material = null;
+
+        // Tenta buscar por _id (ObjectId) — caso o materialId seja um ObjectId string
+        if (m.materialId && ObjectId.isValid(String(m.materialId))) {
+          material = await materialsCollection.findOne({
+            _id: new ObjectId(String(m.materialId)),
+          });
+        }
+
+        // Fallback: tenta buscar por campo id numérico (compatibilidade)
+        if (!material && !isNaN(Number(m.materialId))) {
+          material = await materialsCollection.findOne({
+            id: Number(m.materialId),
+          });
+        }
 
         const necessario = m.quantidade * quantidadeNumber;
-
         const emEstoque = material?.quantidade || 0;
 
         if (necessario > emEstoque) {
@@ -36,7 +51,7 @@ export const simulationService = {
         }
 
         return {
-          material: material?.nome || null,
+          material: material?.nome || "Material não encontrado",
           necessario,
           emEstoque,
         };
@@ -45,9 +60,19 @@ export const simulationService = {
 
     const maximoPorMaterial = await Promise.all(
       (product.materiais || []).map(async (m: any) => {
-        const material = await materialsCollection.findOne({
-          id: m.materialId
-        });
+        let material = null;
+
+        if (m.materialId && ObjectId.isValid(String(m.materialId))) {
+          material = await materialsCollection.findOne({
+            _id: new ObjectId(String(m.materialId)),
+          });
+        }
+
+        if (!material && !isNaN(Number(m.materialId))) {
+          material = await materialsCollection.findOne({
+            id: Number(m.materialId),
+          });
+        }
 
         if (!material) return 0;
 
@@ -64,5 +89,5 @@ export const simulationService = {
       materiaisNecessarios,
       maximoProducao,
     };
-  }
+  },
 };
