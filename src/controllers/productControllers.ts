@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { productService } from "../services/productService";
 import { ObjectId } from "mongodb";
+import { productService } from "../services/productService";
 
 export const productController = {
 
@@ -24,14 +24,13 @@ export const productController = {
 
   async getById(req: Request, res: Response) {
     try {
-      // Forçamos o TypeScript a entender que o id é estritamente uma string
-      const id = req.params.id as string;
+      const { id } = req.params;
 
       if (!ObjectId.isValid(id)) {
         return res.status(400).json({ error: "Formato de ID inválido" });
       }
 
-      const product = await productService.getById(id as any);
+      const product = await productService.getById(id);
       return res.json(product);
     } catch (error: any) {
       return res.status(404).json({ error: error.message });
@@ -40,13 +39,13 @@ export const productController = {
 
   async update(req: Request, res: Response) {
     try {
-      const id = req.params.id as string;
+      const { id } = req.params;
 
       if (!ObjectId.isValid(id)) {
         return res.status(400).json({ error: "Formato de ID inválido" });
       }
 
-      const product = await productService.update(id as any, req.body);
+      const product = await productService.update(id, req.body);
       return res.json(product);
     } catch (error: any) {
       return res.status(400).json({ error: error.message });
@@ -55,13 +54,13 @@ export const productController = {
 
   async delete(req: Request, res: Response) {
     try {
-      const id = req.params.id as string;
+      const { id } = req.params;
 
       if (!ObjectId.isValid(id)) {
         return res.status(400).json({ error: "Formato de ID inválido" });
       }
 
-      const result = await productService.delete(id as any);
+      const result = await productService.delete(id);
       return res.json(result);
     } catch (error: any) {
       return res.status(404).json({ error: error.message });
