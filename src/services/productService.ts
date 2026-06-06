@@ -1,6 +1,7 @@
 import { productRepository } from "../repositories/productRepository";
 
 export const productService = {
+
   async create(data: any) {
     const { nome, materiais } = data;
 
@@ -10,27 +11,21 @@ export const productService = {
 
     await productRepository.validateMaterials(materiais);
 
-    // BUG 2 CORRIGIDO: nextId era variável em memória (let nextId = 1).
-    // Ao reiniciar o servidor voltava para 1, gerando IDs duplicados no banco.
-    // Agora busca o próximo ID diretamente do banco.
-    const id = await productRepository.getNextId();
+    const product = { nome, materiais };
 
-    const product = {
-      id,
-      nome,
-      materiais,
+    const result = await productRepository.create(product);
+
+    return {
+      _id: result.insertedId,
+      ...product,
     };
-
-    await productRepository.create(product);
-
-    return product;
   },
 
   async list() {
     return await productRepository.findAll();
   },
 
-  async getById(id: number) {
+  async getById(id: string) {
     const product = await productRepository.findById(id);
 
     if (!product) {
@@ -40,7 +35,7 @@ export const productService = {
     return product;
   },
 
-  async update(id: number, data: any) {
+  async update(id: string, data: any) {
     const existing = await productRepository.findById(id);
 
     if (!existing) {
@@ -67,7 +62,7 @@ export const productService = {
     return { ...existing, ...updateData };
   },
 
-  async delete(id: number) {
+  async delete(id: string) {
     const existing = await productRepository.findById(id);
 
     if (!existing) {
@@ -78,4 +73,5 @@ export const productService = {
 
     return { message: "Produto removido com sucesso" };
   },
+
 };

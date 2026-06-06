@@ -1,10 +1,12 @@
+import { ObjectId } from "mongodb";
+
 export interface ProductMaterial {
-  materialId: number;
+  materialId: string;
   quantidade: number;
 }
 
 export interface Product {
-  id: number;
+  _id?: ObjectId;
   nome: string;
   materiais: ProductMaterial[];
 }

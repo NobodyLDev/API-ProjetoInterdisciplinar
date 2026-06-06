@@ -1,5 +1,7 @@
+import { ObjectId } from "mongodb";
+
 export interface Material {
-  id: number;
+  _id: ObjectId;
   nome: string;
   quantidade: number;
 }
