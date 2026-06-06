@@ -4,11 +4,9 @@ import { HistoryController } from "../controllers/historyController";
 const router = Router();
 const historyController = new HistoryController();
 
-router.get("/", async (req: Request, res: Response) => {
-  const result = await historyController.findAll();
-  const status = (result as any).status || 200;
-  if ((result as any).data) return res.status(status).json((result as any).data);
-  return res.status(status).json({ message: (result as any).message });
-});
+router.get("/", (req: Request, res: Response) => historyController.findAll(req, res));
+router.get("/:id", (req: Request, res: Response) => historyController.findById(req, res));
+router.post("/", (req: Request, res: Response) => historyController.create(req, res));
+router.delete("/:id", (req: Request, res: Response) => historyController.delete(req, res));
 
 export default router;
