@@ -1,24 +1,30 @@
 import { productRepository } from "../repositories/productRepository";
+import { HistoryRepository } from "../repositories/historyRepository";
+const historyRepository = new HistoryRepository();
 
 export const productService = {
 
   async create(data: any) {
-    const { nome, materiais } = data;
+       const { nome, materiais } = data;
 
-    if (!nome || !Array.isArray(materiais) || materiais.length === 0) {
-      throw new Error("nome e materiais (array não vazio) são obrigatórios");
-    }
+       if (!nome || !Array.isArray(materiais) || materiais.length === 0) {
+           throw new Error("nome e materiais (array não vazio) são obrigatórios");
+       }
 
-    await productRepository.validateMaterials(materiais);
+       await productRepository.validateMaterials(materiais);
 
-    const product = { nome, materiais };
-    const result = await productRepository.create(product);
+       const product = { nome, materiais };
+       await productRepository.create(product);
 
-    return {
-      _id: result.insertedId,
-      ...product,
-    };
-  },
+       // Envia os dados respeitando estritamente a interface History do seu projeto
+       await historyRepository.create({
+        action: "CREATE",
+        entity: "PRODUCT",
+        description: `Produto '${nome}' foi cadastrado com sucesso com os materiais vinculados.`
+       });
+
+       return product;
+   },
 
   async list() {
     return await productRepository.findAll();
