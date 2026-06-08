@@ -66,7 +66,8 @@ function populateMaterialOptions(selectElement) {
 
   materials.forEach((material) => {
     const option = document.createElement("option");
-    option.value = material.id;
+    const materialId = material.id || material._id;
+    option.value = materialId;
     option.textContent = `${material.nome} (${material.quantidade})`;
     selectElement.appendChild(option);
   });
@@ -130,14 +131,14 @@ function renderProducts() {
     card.className = "card-item";
     const materialsText = (product.materiais || [])
       .map((item) => {
-        const material = materials.find((m) => m.id === item.materialId);
+        const material = materials.find((m) => (m.id || m._id) === item.materialId);
         return `${material ? material.nome : 'Material desconhecido'}: ${item.quantidade}`;
       })
       .join("<br />");
 
     card.innerHTML = `
       <h4>${product.nome}</h4>
-      <p>Quantidade por produção: <strong>${product.quantidade}</strong></p>
+      <p>Quantidade por produção: <strong>${product.quantidade ?? 0}</strong></p>
       <p><strong>Materiais:</strong><br />${materialsText || 'Nenhum material definido'}</p>
     `;
     list.appendChild(card);
@@ -149,7 +150,8 @@ function populateSimulationProducts() {
   select.innerHTML = "<option value=\"\">Selecione um produto</option>";
   products.forEach((product) => {
     const option = document.createElement("option");
-    option.value = product.id;
+    const productId = product.id || product._id;
+    option.value = productId;
     option.textContent = `${product.nome}`;
     select.appendChild(option);
   });
@@ -160,22 +162,27 @@ async function onMaterialSubmit(event) {
   const name = document.getElementById("material-name").value.trim();
   const quantity = Number(document.getElementById("material-quantity").value);
 
-  if (!name || quantity <= 0) {
+  if (!name || isNaN(quantity) || quantity <= 0) {
     return showNotification("Preencha o nome e a quantidade corretamente.", true);
   }
 
   try {
-    await fetch(`${apiBase}/materials`, {
+    const response = await fetch(`${apiBase}/materials`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nome: name, quantidade: quantity }),
     });
 
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Erro ao cadastrar material");
+    }
+
     document.getElementById("material-form").reset();
     await refreshData();
     showNotification("Material cadastrado com sucesso.");
   } catch (error) {
-    showNotification("Não foi possível cadastrar o material.", true);
+    showNotification(error.message || "Não foi possível cadastrar o material.", true);
   }
 }
 
@@ -185,15 +192,15 @@ async function onProductSubmit(event) {
   const quantity = Number(document.getElementById("product-quantity").value);
   const rows = Array.from(document.querySelectorAll("#product-material-rows .material-row"));
 
-  if (!name || quantity <= 0) {
+  if (!name || isNaN(quantity) || quantity <= 0) {
     return showNotification("Informe nome e quantidade válidos para o produto.", true);
   }
 
   const materiais = rows
     .map((row) => {
-      const materialId = Number(row.querySelector("select").value);
+      const materialId = row.querySelector("select").value;
       const quantidade = Number(row.querySelector("input").value);
-      return materialId && quantidade > 0 ? { materialId, quantidade } : null;
+      return materialId && !isNaN(quantidade) && quantidade > 0 ? { materialId, quantidade } : null;
     })
     .filter(Boolean);
 
@@ -202,11 +209,16 @@ async function onProductSubmit(event) {
   }
 
   try {
-    await fetch(`${apiBase}/products`, {
+    const response = await fetch(`${apiBase}/products`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome: name, quantidade, materiais }),
+     body: JSON.stringify({ nome: name, quantidade: quantity, materiais })
     });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Erro ao cadastrar produto");
+    }
 
     document.getElementById("product-form").reset();
     document.getElementById("product-material-rows").innerHTML = "";
@@ -214,16 +226,16 @@ async function onProductSubmit(event) {
     await refreshData();
     showNotification("Produto cadastrado com sucesso.");
   } catch (error) {
-    showNotification("Não foi possível cadastrar o produto.", true);
+    showNotification(error.message || "Não foi possível cadastrar o produto.", true);
   }
 }
 
 async function onSimulationSubmit(event) {
   event.preventDefault();
-  const productId = Number(document.getElementById("simulation-product").value);
+  const productId = document.getElementById("simulation-product").value;
   const quantity = Number(document.getElementById("simulation-quantity").value);
 
-  if (!productId || quantity <= 0) {
+  if (!productId || isNaN(quantity) || quantity <= 0) {
     return showNotification("Selecione um produto e informe uma quantidade válida.", true);
   }
 

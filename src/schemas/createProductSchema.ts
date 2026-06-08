@@ -3,6 +3,11 @@ export const createProductSchema = {
     required: true,
     type: "string",
   },
+  quantidade: {
+    required: true,
+    type: "number",
+    min: 1,
+  },
   materiais: {
     required: true,
     type: "array",

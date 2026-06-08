@@ -8,5 +8,6 @@ export interface ProductMaterial {
 export interface Product {
   _id?: ObjectId;
   nome: string;
+  quantidade: number;
   materiais: ProductMaterial[];
 }

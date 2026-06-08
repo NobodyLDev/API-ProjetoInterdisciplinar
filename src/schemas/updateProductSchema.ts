@@ -3,6 +3,11 @@ export const updateProductSchema = {
     required: false,
     type: "string",
   },
+  quantidade: {
+    required: false,
+    type: "number",
+    min: 1,
+  },
   materiais: {
     required: false,
     type: "array",

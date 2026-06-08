@@ -1,15 +1,18 @@
 import { ObjectId } from "mongodb";
 import { productsCollection, materialsCollection } from "../database/database";
+import { transformMongoData } from "../utils/mongoDataTransform";
 
 export const productRepository = {
 
   async findAll() {
-    return await productsCollection.find().toArray();
+    const products = await productsCollection.find().toArray();
+    return transformMongoData(products);
   },
 
   async findById(id: string) {
     if (!ObjectId.isValid(id)) throw new Error("ID inválido");
-    return await productsCollection.findOne({ _id: new ObjectId(id) });
+    const product = await productsCollection.findOne({ _id: new ObjectId(id) });
+    return transformMongoData(product);
   },
 
   async create(product: any) {

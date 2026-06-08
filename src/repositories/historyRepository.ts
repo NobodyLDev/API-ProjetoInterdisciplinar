@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { historyCollection } from "../database/database";
 import { History } from "../models/history";
+import { transformMongoData } from "../utils/mongoDataTransform";
 
 export class HistoryRepository {
 
@@ -11,21 +12,23 @@ export class HistoryRepository {
     });
 
     return {
-      _id: result.insertedId,
+      id: result.insertedId.toString(),
       ...data,
     };
   }
 
   async findAll() {
-    return await historyCollection
+    const history = await historyCollection
       .find()
       .sort({ createdAt: -1 })
       .toArray();
+    return transformMongoData(history);
   }
 
   async findById(id: string) {
     if (!ObjectId.isValid(id)) throw new Error("ID inválido");
-    return await historyCollection.findOne({ _id: new ObjectId(id) });
+    const item = await historyCollection.findOne({ _id: new ObjectId(id) });
+    return transformMongoData(item);
   }
 
   async delete(id: string) {

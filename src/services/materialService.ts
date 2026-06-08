@@ -13,7 +13,7 @@ export const materialService = {
     const result = await materialRepository.create({ nome, quantidade });
 
     return {
-      _id: result.insertedId,
+      id: result.insertedId.toString(),
       nome,
       quantidade,
     };

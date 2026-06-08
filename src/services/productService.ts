@@ -2,19 +2,31 @@ import { productRepository } from "../repositories/productRepository";
 import { HistoryRepository } from "../repositories/historyRepository";
 const historyRepository = new HistoryRepository();
 
+function normalizeProduct(product: any) {
+  if (!product) return product;
+  return {
+    ...product,
+    quantidade: typeof product.quantidade === "number" ? product.quantidade : 0,
+    materiais: Array.isArray(product.materiais) ? product.materiais : [],
+  };
+}
+
 export const productService = {
 
   async create(data: any) {
-       const { nome, materiais } = data;
+       const { nome, quantidade, materiais } = data;
 
-       if (!nome || !Array.isArray(materiais) || materiais.length === 0) {
-           throw new Error("nome e materiais (array não vazio) são obrigatórios");
+       if (!nome || typeof quantidade !== "number" || quantidade <= 0) {
+           throw new Error("nome e quantidade (número > 0) são obrigatórios");
+       }
+
+       if (!Array.isArray(materiais) || materiais.length === 0) {
+           throw new Error("materiais (array não vazio) são obrigatórios");
        }
 
        await productRepository.validateMaterials(materiais);
 
-       const product = { nome, materiais };
-       await productRepository.create(product);
+       const result = await productRepository.create({ nome, quantidade, materiais });
 
        // Envia os dados respeitando estritamente a interface History do seu projeto
        await historyRepository.create({
@@ -23,11 +35,17 @@ export const productService = {
         description: `Produto '${nome}' foi cadastrado com sucesso com os materiais vinculados.`
        });
 
-       return product;
+       return {
+         id: result.insertedId.toString(),
+         nome,
+         quantidade,
+         materiais
+       };
    },
 
   async list() {
-    return await productRepository.findAll();
+    const products = await productRepository.findAll();
+    return products.map(normalizeProduct);
   },
 
   async getById(id: string) {
@@ -37,7 +55,7 @@ export const productService = {
       throw new Error("Produto não encontrado");
     }
 
-    return product;
+    return normalizeProduct(product);
   },
 
   async update(id: string, data: any) {
@@ -47,7 +65,15 @@ export const productService = {
       throw new Error("Produto não encontrado");
     }
 
-    const { nome, materiais } = data;
+    const { nome, quantidade, materiais } = data;
+
+    if (nome !== undefined && typeof nome !== "string") {
+      throw new Error("nome deve ser uma string");
+    }
+
+    if (quantidade !== undefined && (typeof quantidade !== "number" || quantidade <= 0)) {
+      throw new Error("quantidade deve ser um número maior que 0");
+    }
 
     if (materiais !== undefined) {
       if (!Array.isArray(materiais) || materiais.length === 0) {
@@ -60,6 +86,7 @@ export const productService = {
     const updateData: any = {};
 
     if (nome !== undefined) updateData.nome = nome;
+    if (quantidade !== undefined) updateData.quantidade = quantidade;
     if (materiais !== undefined) updateData.materiais = materiais;
 
     await productRepository.update(id, updateData);
