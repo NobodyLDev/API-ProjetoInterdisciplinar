@@ -13,3 +13,11 @@ Banco de Dados
 **Observações**
 
 Este projeto está sendo desenvolvido como parte de um Projeto Integrador (P.I), com foco em aprendizado prático e aplicação de conceitos de desenvolvimento backend.
+
+**Integrantes:**
+Letícia Schiffel Mariano 
+Camily Aparecida Ferreira
+Sara de Lemos Alves
+Nícolas Masaishi Oi Pessoa 
+Larissa Gabriela Vilardi Paloze
+Igor Mota Soares 
