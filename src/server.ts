@@ -1,5 +1,7 @@
 import express from "express";
 import path from "path";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 import materialsRoutes from "./routes/materialRoutes";
 import productsRoutes from "./routes/productRoutes";
 import simulationRoutes from "./routes/simulationRoutes";
@@ -27,6 +29,12 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 app.use(loggerMiddleware);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get("/api-docs.json", (_req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 const frontendPath = path.resolve(process.cwd(), "src", "Frontend");
 app.use(express.static(frontendPath));
