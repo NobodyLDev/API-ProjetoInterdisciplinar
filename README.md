@@ -24,3 +24,6 @@ Igor Mota Soares
 
 Link do Deploy - 
 https://api-projetointerdisciplinar.onrender.com/
+
+Link do Swagger -
+https://api-projetointerdisciplinar.onrender.com/api-docs
